@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'add_patient_screen.dart';
 import 'login_screen.dart';
+import 'patient_list_screen.dart'; // 👈 NEW IMPORT
 
 class CaretakerDashboardScreen extends StatefulWidget {
   const CaretakerDashboardScreen({super.key});
@@ -39,23 +40,13 @@ class _CaretakerDashboardScreenState extends State<CaretakerDashboardScreen> {
     }
   }
 
-  void openPatient(dynamic patient) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text("Opening ${patient["name"]} dashboard")),
-    );
-  }
-
   void addPatient() async {
-    print("ADD BUTTON PRESSED");
-
     final result = await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (_) => const AddPatientScreen(),
       ),
     );
-
-    print("RETURNED FROM ADD PATIENT");
 
     if (result == true) {
       fetchPatients();
@@ -74,8 +65,6 @@ class _CaretakerDashboardScreenState extends State<CaretakerDashboardScreen> {
           style: TextStyle(fontWeight: FontWeight.w600),
         ),
         centerTitle: true,
-
-        // ✅ FIX ADDED HERE (Logout Button)
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
@@ -90,94 +79,98 @@ class _CaretakerDashboardScreenState extends State<CaretakerDashboardScreen> {
           )
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: addPatient,
-        backgroundColor: const Color(0xFF2A5C8A),
-        child: const Icon(Icons.add),
-      ),
+
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
-          : patients.isEmpty
-          ? const Center(
-        child: Text(
-          "No Patients Added",
-          style: TextStyle(
-            fontSize: 16,
-            color: Colors.black54,
-          ),
-        ),
-      )
-          : ListView.builder(
-        padding: const EdgeInsets.all(16),
-        itemCount: patients.length,
-        itemBuilder: (context, index) {
-          final patient = patients[index];
+          : Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          children: [
+            const SizedBox(height: 20),
 
-          return GestureDetector(
-            onTap: () => openPatient(patient),
-            child: Container(
-              margin: const EdgeInsets.only(bottom: 16),
-              padding: const EdgeInsets.all(18),
+            // ➕ Add Patient
+            _buildMenuCard(
+              icon: Icons.person_add_alt_1_rounded,
+              title: "Add Patient",
+              subtitle: "Register a new patient",
+              onTap: addPatient,
+            ),
+
+            const SizedBox(height: 20),
+
+            // 📋 View Patients
+            _buildMenuCard(
+              icon: Icons.people_alt_rounded,
+              title: "View Patients",
+              subtitle: "See and manage your patients",
+                onTap: () async {
+                  final result = await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => PatientListScreen(patients: patients),
+                    ),
+                  );
+
+                  if (result == true) {
+                    fetchPatients(); // refresh list after delete
+                  }
+                },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMenuCard({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(18),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
+                color: const Color(0xFF2A5C8A).withOpacity(0.1),
+                borderRadius: BorderRadius.circular(14),
               ),
-              child: Row(
+              child: Icon(icon, color: const Color(0xFF2A5C8A), size: 28),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Container(
-                    padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF2A5C8A).withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    child: const Icon(
-                      Icons.person,
-                      color: Color(0xFF2A5C8A),
-                      size: 28,
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment:
-                      CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          patient["name"],
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w600,
-                            color: Color(0xFF1A3F5F),
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        Text(
-                          "Age: ${patient["age"]}   Gender: ${patient["gender"]}",
-                          style: const TextStyle(
-                            fontSize: 14,
-                            color: Colors.black54,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const Icon(
-                    Icons.arrow_forward_ios_rounded,
-                    size: 18,
-                    color: Colors.black38,
-                  )
+                  Text(title,
+                      style: const TextStyle(
+                          fontSize: 18, fontWeight: FontWeight.w600)),
+                  const SizedBox(height: 6),
+                  Text(subtitle,
+                      style: const TextStyle(color: Colors.black54)),
                 ],
               ),
             ),
-          );
-        },
+            const Icon(Icons.arrow_forward_ios_rounded,
+                size: 18, color: Colors.black38)
+          ],
+        ),
       ),
     );
   }

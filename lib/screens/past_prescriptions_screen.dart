@@ -6,8 +6,14 @@ import 'package:printing/printing.dart';
 import 'dart:convert';
 
 class PastPrescriptionsScreen extends StatefulWidget {
-  const PastPrescriptionsScreen({super.key});
+  final String? patientId;
+  final bool isCaretakerMode;
 
+  const PastPrescriptionsScreen({
+    super.key,
+    this.patientId,
+    this.isCaretakerMode = false,
+  });
   @override
   State<PastPrescriptionsScreen> createState() =>
       _PastPrescriptionsScreenState();
@@ -26,16 +32,19 @@ class _PastPrescriptionsScreenState extends State<PastPrescriptionsScreen> {
   Future<void> fetchPrescriptions() async {
     final uid = FirebaseAuth.instance.currentUser!.uid;
 
-    final response = await http.get(
-      Uri.parse(
-          "https://medimate-backend-wzk0.onrender.com/past-prescriptions/$uid"),
-    );
+    final url = (widget.isCaretakerMode && widget.patientId != null)
+        ? "https://medimate-backend-wzk0.onrender.com/patient-prescriptions/${widget.patientId}"
+        : "https://medimate-backend-wzk0.onrender.com/past-prescriptions/$uid";
+
+    final response = await http.get(Uri.parse(url));
 
     if (response.statusCode == 200) {
       setState(() {
         prescriptions = jsonDecode(response.body);
         isLoading = false;
       });
+    } else {
+      print("Failed to load prescriptions");
     }
   }
 

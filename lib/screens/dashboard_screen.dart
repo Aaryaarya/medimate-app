@@ -10,8 +10,18 @@ import 'past_prescriptions_screen.dart';
 class DashboardScreen extends StatefulWidget {
   final String role;
 
-  const DashboardScreen({super.key, required this.role});
+  // 🆕 ADD THESE
+  final String? patientId;
+  final String? patientName;
+  final bool isCaretakerMode;
 
+  const DashboardScreen({
+    super.key,
+    required this.role,
+    this.patientId,
+    this.patientName,
+    this.isCaretakerMode = false,
+  });
   @override
   State<DashboardScreen> createState() => _DashboardScreenState();
 }
@@ -116,7 +126,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              "${widget.role} Dashboard",
+                              widget.isCaretakerMode
+                                  ? "${widget.patientName} Dashboard"
+                                  : "${widget.role} Dashboard",
                               style: const TextStyle(
                                 fontSize: 20,
                                 fontWeight: FontWeight.w700,
@@ -236,7 +248,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                       Navigator.push(
                                         context,
                                         MaterialPageRoute(
-                                          builder: (_) => const UploadPrescriptionScreen(),
+                                          builder: (_) => UploadPrescriptionScreen(
+                                            patientId: widget.patientId,
+                                            isCaretakerMode: widget.isCaretakerMode,
+                                          ),
                                         ),
                                       );
                                     },
@@ -253,7 +268,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                       Navigator.push(
                                         context,
                                         MaterialPageRoute(
-                                          builder: (_) => const PastPrescriptionsScreen(),
+                                          builder: (_) => PastPrescriptionsScreen(
+                                            patientId: widget.patientId,
+                                            isCaretakerMode: widget.isCaretakerMode,
+                                          ),
                                         ),
                                       );
                                     },
@@ -279,71 +297,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
                                   const SizedBox(height: 16),
 
-                                  _buildActionCard(
-                                    icon: Icons.inventory_2_outlined,
-                                    title: "Pending Scans",
-                                    description: "View prescriptions waiting for processing",
-                                    color: const Color(0xFF1A3F5F),
-                                    onTap: () {
-                                      // Future functionality
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        SnackBar(
-                                          content: const Text("Coming soon!"),
-                                          backgroundColor: const Color(0xFF2A5C8A),
-                                          behavior: SnackBarBehavior.floating,
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(10),
-                                          ),
-                                        ),
-                                      );
-                                    },
-                                  ),
+
                                 ],
 
-                                // CARETAKER ROLE
-                                if (widget.role == "Caretaker") ...[
-                                  _buildActionCard(
-                                    icon: Icons.person_add_outlined,
-                                    title: "Add Patient",
-                                    description: "Register a new patient",
-                                    color: const Color(0xFF2A5C8A),
-                                    onTap: () {
-                                      // Future functionality
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        SnackBar(
-                                          content: const Text("Coming soon!"),
-                                          backgroundColor: const Color(0xFF2A5C8A),
-                                          behavior: SnackBarBehavior.floating,
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(10),
-                                          ),
-                                        ),
-                                      );
-                                    },
-                                  ),
 
-                                  const SizedBox(height: 16),
-
-                                  _buildActionCard(
-                                    icon: Icons.people_outlined,
-                                    title: "View Patients",
-                                    description: "Manage your patients",
-                                    color: const Color(0xFF1A3F5F),
-                                    onTap: () {
-                                      // Future functionality
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        SnackBar(
-                                          content: const Text("Coming soon!"),
-                                          backgroundColor: const Color(0xFF2A5C8A),
-                                          behavior: SnackBarBehavior.floating,
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(10),
-                                          ),
-                                        ),
-                                      );
-                                    },
-                                  ),
-                                ],
 
                                 const SizedBox(height: 30),
 

@@ -11,7 +11,15 @@ import 'dart:typed_data';
 import 'dart:convert';
 
 class UploadPrescriptionScreen extends StatefulWidget {
-  const UploadPrescriptionScreen({super.key});
+  final String? patientId;
+  final bool isCaretakerMode;
+
+  const UploadPrescriptionScreen({
+    super.key,
+    this.patientId,
+    this.isCaretakerMode = false,
+  });
+
 
   @override
   State<UploadPrescriptionScreen> createState() =>
@@ -62,8 +70,14 @@ class _UploadPrescriptionScreenState
       );
 
       // IMPORTANT: Send UID
-      request.fields["firebase_uid"] =
-          FirebaseAuth.instance.currentUser!.uid;
+      // 🔥 NEW LOGIC — caretaker or normal user
+      if (widget.isCaretakerMode == true && widget.patientId != null) {
+        request.fields["patient_id"] = widget.patientId!;
+      } else {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid != null) {
+    request.fields["firebase_uid"] = uid;
+    }}
 
       request.files.add(
         http.MultipartFile.fromBytes(
